@@ -1,10 +1,10 @@
 (ns zero.demo.app
   (:require
-   [clojure.string :as str]
    [zero.core :refer [<< act bnd] :as z]
    [zero.config :as zc]
    [zero.extras.util :as zu]
-   [zero.extras.all]
+   [zero.extras.dom :as zd]
+   [zero.extras.db :as db]
    [zero.demo.view :as view]))
 
 (zc/reg-injections
@@ -13,21 +13,24 @@
     [(js/URL. "node_modules/todomvc-common/base.css" js/document.baseURI)
      (js/URL. "node_modules/todomvc-app-css/index.css" js/document.baseURI)])
 
-  :event.kb/match-key?
-  (fn [{:keys [data]} {:keys [key mods code]}]
+  ::view/match-key?
+  (fn [{data ::z/event.data} {:keys [key mods code]}]
     (and
       (or (nil? key) (= key (:key data)))
       (or (nil? code) (= code (:code data)))
-      (= (set (:mods data)) (set mods))))
+      (= (set (:mods data)) (set mods)))))
 
-  :dom.input/value
-  (fn [{:keys [root]} selector]
-    (some-> root
-      (.querySelector (zu/css-selector selector))
-      .-value)))
+(zc/reg-effects
+  ::view/select-after-render
+  (fn [^js/ShadowRoot root selector]
+    (zd/listen root "render" ::focus-after-render
+      (fn []
+        (when-let [target ^js/Node (.querySelector root (zu/css-selector selector))]
+          (.select target)))
+      :once? true)))
 
 (zc/reg-components
   :z/app
-  {:props {:items (bnd :ze.db/path [:todo-items])
-           :new-item (bnd :ze.db/path [:new-item])}
+  {:props {:items (bnd ::db/path [:todo-items])
+           :new-item (bnd ::db/path [:new-item])}
    :view view/app-view})
