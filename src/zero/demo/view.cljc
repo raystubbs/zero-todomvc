@@ -1,7 +1,6 @@
 (ns zero.demo.view
   (:require
-    [zero.core :refer [act bnd <<] :as z]
-    [zero.extras.util :refer [<<ctx] :as zu]
+    [zero.core :refer [act bnd << <<ctx] :as z]
     [zero.extras.db :as-alias db]))
 
 (defn app-view [{:keys [items new-item]}]
@@ -21,15 +20,15 @@
         :value new-item
         ::z/on {:input (act [::db/patch [{:path [:new-item] :value (<<ctx ::z/event.data)}]])
                 :keydown (act
-                           [::zu/cond
-                            [(<< ::match-key? {:key "Enter"})
-                             [::db/patch
-                              [{:path [:todo-items]
-                                :conj {:text new-item
-                                       :completed? false
-                                       :editing? false}}
-                               {:path [:new-item]
-                                :value ""}]]]])}]]
+                           [::z/cond
+                            (<< ::match-key? {:key "Enter"})
+                            (act [::db/patch
+                                  [{:path [:todo-items]
+                                    :conj {:text new-item
+                                           :completed? false
+                                           :editing? false}}
+                                   {:path [:new-item]
+                                    :value ""}]])])}]]
       (when (seq items)
         [:section.main
          [:input#toggle-all.toggle-all

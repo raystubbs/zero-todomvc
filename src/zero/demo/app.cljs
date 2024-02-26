@@ -23,9 +23,9 @@
 (zc/reg-effects
   ::view/select-after-render
   (fn [^js/ShadowRoot root selector]
-    (zd/listen root "render" ::focus-after-render
+    (z/listen ::focus-after-render root "render"
       (fn []
-        (when-let [target ^js/Node (.querySelector root (zu/css-selector selector))]
+        (when-let [target ^js/Node (.querySelector root (z/css-selector selector))]
           (.select target)))
       :once? true)))
 

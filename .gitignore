@@ -5,3 +5,5 @@
 pub/js
 *.iml
 pub/node_modules
+.clj-kondo
+.lsp
