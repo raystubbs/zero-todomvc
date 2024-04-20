@@ -2,28 +2,15 @@
   (:require
    [zero.core :refer [<< act bnd] :as z]
    [zero.config :as zc]
-   [zero.extras.util :as zu]
-   [zero.extras.dom :as zd]
    [zero.extras.db :as db]
-   [zero.demo.view :as view]))
-
-(zc/reg-injections
-  ::view/css-urls
-  (fn []
-    [(js/URL. "node_modules/todomvc-common/base.css" js/document.baseURI)
-     (js/URL. "node_modules/todomvc-app-css/index.css" js/document.baseURI)])
-
-  ::view/match-key?
-  (fn [{data ::z/event.data} {:keys [key mods code]}]
-    (and
-      (or (nil? key) (= key (:key data)))
-      (or (nil? code) (= code (:code data)))
-      (= (set (:mods data)) (set mods)))))
+   [zero.dom :as zd]
+   [zero.demo.view :as view]
+   [zero.component]))
 
 (zc/reg-effects
   ::view/select-after-render
   (fn [^js/ShadowRoot root selector]
-    (z/listen ::focus-after-render root "render"
+    (zd/listen ::focus-after-render root "render"
       (fn []
         (when-let [target ^js/Node (.querySelector root (z/css-selector selector))]
           (.select target)))

@@ -6,7 +6,8 @@
 (defn app-view [{:keys [items new-item]}]
   (let [completed-items (vec (filter :completed? items))]
     [:root>
-     ::z/css (<< ::css-urls)
+     ::z/css ["node_modules/todomvc-common/base.css"
+              "node_modules/todomvc-app-css/index.css"]
      ::z/style {:display "block"}
      ::z/on {:connect (act [::db/patch
                             [{:path [:todo-items]
@@ -20,15 +21,20 @@
         :value new-item
         ::z/on {:input (act [::db/patch [{:path [:new-item] :value (<<ctx ::z/event.data)}]])
                 :keydown (act
-                           [::z/cond
-                            (<< ::match-key? {:key "Enter"})
-                            (act [::db/patch
+                           [::z/choose
+                            (fn [{:keys [key]}]
+                              (case key
+                                "Enter"
+                                [[::db/patch
                                   [{:path [:todo-items]
                                     :conj {:text new-item
                                            :completed? false
                                            :editing? false}}
                                    {:path [:new-item]
-                                    :value ""}]])])}]]
+                                    :value ""}]]]
+                                
+                                nil))
+                            (<<ctx ::z/event.data)])}]]
       (when (seq items)
         [:section.main
          [:input#toggle-all.toggle-all
